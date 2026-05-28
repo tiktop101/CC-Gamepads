@@ -12,13 +12,13 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWGamepadState;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -53,6 +53,17 @@ public class GamepadClientBridge {
      */
     public static final int AXIS_COUNT = GamepadConstants.AXIS_COUNT;
 
+    public static void requestControllerListRefresh() {
+        sentInitialList = false;
+        lastCount = -1;
+        PREVIOUS.clear();
+    }
+
+    public static List<ClientControllerInfo> availableControllers() {
+        ensureMappingsLoaded();
+        return listControllers();
+    }
+
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
@@ -73,7 +84,7 @@ public class GamepadClientBridge {
         scanCounter++;
         if (scanCounter >= SCAN_INTERVAL) {
             scanCounter = 0;
-            int count = countGamepads();
+            int count = selectedControllers().size();
             if (count != lastCount) {
                 PREVIOUS.clear();
                 sendControllerList(mc.player.getUUID());
@@ -110,14 +121,19 @@ public class GamepadClientBridge {
     private static void updateMappings(InputStream input) throws IOException {
         if (input == null) return;
         byte[] bytes = input.readAllBytes();
-        ByteBuffer buffer = MemoryUtil.memASCIISafe(new String(bytes, StandardCharsets.UTF_8));
-        if (buffer != null) GLFW.glfwUpdateGamepadMappings(buffer);
+        ByteBuffer buffer = MemoryUtil.memAlloc(bytes.length + 1);
+        try {
+            buffer.put(bytes).put((byte) 0).flip();
+            GLFW.glfwUpdateGamepadMappings(buffer);
+        } finally {
+            MemoryUtil.memFree(buffer);
+        }
     }
 
     private static void sendControllerList(UUID playerId) {
         List<GamepadListPacket.Info> infos = new ArrayList<>();
         GUIDS.clear();
-        for (ClientControllerInfo controller : listControllers()) {
+        for (ClientControllerInfo controller : selectedControllers()) {
             infos.add(new GamepadListPacket.Info(controller.id, controller.name, controller.guid, BUTTON_COUNT, AXIS_COUNT));
             GUIDS.put(controller.id, controller.guid);
         }
@@ -126,7 +142,7 @@ public class GamepadClientBridge {
     }
 
     private static void sendChangedStates(UUID playerId) {
-        for (ClientControllerInfo controller : listControllers()) {
+        for (ClientControllerInfo controller : selectedControllers()) {
             Snapshot snapshot = Snapshot.capture(controller);
             if (snapshot == null) continue;
             Snapshot previous = PREVIOUS.get(controller.id);
@@ -139,12 +155,17 @@ public class GamepadClientBridge {
         }
     }
 
-    private static int countGamepads() {
-        int count = 0;
-        for (int jid = GLFW.GLFW_JOYSTICK_1; jid <= GLFW.GLFW_JOYSTICK_LAST; jid++) {
-            if (GLFW.glfwJoystickPresent(jid)) count++;
+    private static List<ClientControllerInfo> selectedControllers() {
+        List<ClientControllerInfo> controllers = listControllers();
+        if (controllers.isEmpty()) return List.of();
+
+        if (GamepadClientConfig.isAutoControllerSelected()) return List.of(controllers.getFirst());
+
+        for (ClientControllerInfo controller : controllers) {
+            if (GamepadClientConfig.isSelectedController(controller.name, controller.guid)) return List.of(controller);
         }
-        return count;
+
+        return List.of();
     }
 
     private static List<ClientControllerInfo> listControllers() {
@@ -159,7 +180,7 @@ public class GamepadClientBridge {
         return controllers;
     }
 
-    record ClientControllerInfo(int id, int deviceIndex, String name, String guid) {}
+    public record ClientControllerInfo(int id, int deviceIndex, String name, String guid) {}
 
     static class Snapshot {
         final byte[] buttons;
@@ -180,20 +201,21 @@ public class GamepadClientBridge {
                 // GLFW_GAMEPAD_BUTTON_* indices 0-14 map 1:1 to our button array.
                 // GLFW_GAMEPAD_AXIS triggers report -1.0 (released) to +1.0 (fully pressed)
                 // per the GLFW/SDL spec — normalize to 0..1 with (v+1)/2.
-                GLFWGamepadState state = GLFWGamepadState.create();
-                if (GLFW.glfwGetGamepadState(jid, state)) {
-                    for (int i = 0; i < BUTTON_COUNT; i++) {
-                        buttons[i] = state.buttons(i) == GLFW.GLFW_PRESS ? (byte) 1 : 0;
+                try (MemoryStack stack = MemoryStack.stackPush()) {
+                    GLFWGamepadState state = GLFWGamepadState.malloc(stack);
+                    if (GLFW.glfwGetGamepadState(jid, state)) {
+                        for (int i = 0; i < BUTTON_COUNT; i++) {
+                            buttons[i] = state.buttons(i) == GLFW.GLFW_PRESS ? (byte) 1 : 0;
+                        }
+                        axes[0] = clamp(state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_X));
+                        axes[1] = clamp(state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y));
+                        axes[2] = clamp(state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X));
+                        axes[3] = clamp(state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y));
+                        // SDL triggers: -1=released, +1=fully pressed -> always use (v+1)/2
+                        axes[4] = sdlTriggerToUnit(state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_TRIGGER));
+                        axes[5] = sdlTriggerToUnit(state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER));
                     }
-                    axes[0] = clamp(state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_X));
-                    axes[1] = clamp(state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y));
-                    axes[2] = clamp(state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X));
-                    axes[3] = clamp(state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y));
-                    // SDL triggers: -1=released, +1=fully pressed → always use (v+1)/2
-                    axes[4] = sdlTriggerToUnit(state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_TRIGGER));
-                    axes[5] = sdlTriggerToUnit(state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER));
                 }
-                state.close();
                 return new Snapshot(buttons, axes);
             }
 

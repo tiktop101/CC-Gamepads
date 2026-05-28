@@ -20,17 +20,29 @@ public class GamepadConfigScreen extends Screen {
 
     @Override
     protected void init() {
-        int x = this.width / 2 - 100;
+        int x = this.width / 2 - 130;
         int y = this.height / 4;
         this.addRenderableWidget(CycleButton.onOffBuilder(GamepadClientConfig.render3dGamepad())
-            .create(x, y, 200, 20, Component.translatable("config.ccgamepads.render3d_gamepad"),
+            .create(x, y, 260, 20, Component.translatable("config.ccgamepads.render3d_gamepad"),
                 (button, value) -> GamepadClientConfig.setRender3dGamepad(value)));
         this.addRenderableWidget(CycleButton.onOffBuilder(GamepadClientConfig.wireCables())
-            .create(x, y + 26, 200, 20, Component.translatable("config.ccgamepads.wire_cables"),
+            .create(x, y + 26, 260, 20, Component.translatable("config.ccgamepads.wire_cables"),
                 (button, value) -> GamepadClientConfig.setWireCables(value)));
-        this.addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> this.minecraft.setScreen(this.parent))
-            .bounds(x, this.height / 4 + 74, 200, 20)
+
+        this.addRenderableWidget(Button.builder(controllerButtonLabel(), button -> this.minecraft.setScreen(new GamepadControllerSelectScreen(this)))
+            .bounds(x, y + 52, 260, 20)
             .build());
+
+        this.addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> this.minecraft.setScreen(this.parent))
+            .bounds(x, this.height / 4 + 100, 260, 20)
+            .build());
+    }
+
+    private static Component controllerButtonLabel() {
+        String value = GamepadClientConfig.isAutoControllerSelected()
+            ? Component.translatable("config.ccgamepads.controller.auto").getString()
+            : GamepadControllerSelectScreen.controllerLabel(GamepadClientConfig.selectedControllerName(), GamepadClientConfig.selectedControllerGuid());
+        return Component.translatable("config.ccgamepads.controller.button", value);
     }
 
     @Override
