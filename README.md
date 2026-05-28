@@ -16,7 +16,7 @@ The controller is read on the player client, sent to the server, and exposed to 
 2. Hold a `Gamepad` item.
 3. Sneak-right-click the Gamepad Peripheral with the Gamepad item to bind it.
 4. Keep the bound Gamepad item in your main hand or off hand.
-5. Plug in a controller and run Lua code on the computer.
+5. Plug in/connect with bluetooth your/a controller and run Lua code on the computer.
 
 Up to 4 players can send input to the same Gamepad Peripheral at once. Each player gets a slot from 1 to 4.
 
