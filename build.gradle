@@ -1,0 +1,70 @@
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.78'
+}
+
+version = '1.0.0-neoforge-1.21.1'
+group = 'com.tom.ccgamepads'
+
+base { archivesName = 'ccgamepads' }
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+layout.buildDirectory = file('/tmp/ccgamepads-build')
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    destinationDirectory = file("$projectDir/build/libs")
+}
+
+clean {
+    delete file('build')
+}
+
+neoForge {
+    version = '21.1.211'
+
+    parchment {
+        minecraftVersion = '1.21.1'
+        mappingsVersion = '2024.11.17'
+    }
+
+    runs {
+        client { client() }
+        server { server() }
+    }
+
+    mods {
+        ccgamepads { sourceSet sourceSets.main }
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { name = "NeoForge"; url = "https://maven.neoforged.net/releases" }
+    maven { name = "CC: Tweaked"; url = "https://maven.squiddev.cc" }
+    flatDir { dirs 'libs' }
+}
+
+dependencies {
+    compileOnly files('../directgpuneoforge1.21.1/libs/cc-tweaked-1.21.1-forge-1.117.1.jar')
+    runtimeOnly files('../directgpuneoforge1.21.1/libs/cc-tweaked-1.21.1-forge-1.117.1.jar')
+}
+
+jar {
+    manifest {
+        attributes(
+            "Specification-Title": "CC: Gamepads",
+            "Specification-Version": "1",
+            "Implementation-Title": project.name,
+            "Implementation-Version": version,
+            "Implementation-Vendor": "Tom"
+        )
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

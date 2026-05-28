@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "ccgamepads:block/gamepad_peripheral" },
+    "facing=east": { "model": "ccgamepads:block/gamepad_peripheral", "y": 90 },
+    "facing=south": { "model": "ccgamepads:block/gamepad_peripheral", "y": 180 },
+    "facing=west": { "model": "ccgamepads:block/gamepad_peripheral", "y": 270 }
+  }
+}

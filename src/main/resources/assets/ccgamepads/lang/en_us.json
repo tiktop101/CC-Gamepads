@@ -1,0 +1,15 @@
+{
+  "itemGroup.ccgamepads": "CC: Gamepads",
+  "block.ccgamepads.gamepad_peripheral": "Gamepad Peripheral",
+  "item.ccgamepads.gamepad_peripheral": "Gamepad Peripheral",
+  "item.ccgamepads.gamepad": "Gamepad",
+  "message.ccgamepads.bound": "Gamepad bound",
+  "message.ccgamepads.unbound": "Gamepad unbound",
+  "config.ccgamepads.title": "CC: Gamepads",
+  "config.ccgamepads.render3d_gamepad": "3D Renderer Gamepad",
+  "config.ccgamepads.wire_cables": "Wire Cables",
+  "tooltip.ccgamepads.gamepad.status.unbound": "Not bound to a Gamepad Peripheral",
+  "tooltip.ccgamepads.gamepad.status.bound": "Bound to a Gamepad Peripheral",
+  "tooltip.ccgamepads.gamepad.slot": "Slot: %s",
+  "tooltip.ccgamepads.gamepad.slot.unassigned": "Slot: unassigned"
+}
