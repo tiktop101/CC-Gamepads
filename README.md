@@ -37,9 +37,9 @@ Requires:
 
 Gamepad Peripheral
 
-[Iron]     [Redstone] [Iron]
-[Redstone] [Computer] [Redstone]
-[Iron]     [Gamepad]  [Iron]
+[Iron][Redstone][Iron]
+[Redstone][Computer][Redstone]
+[Iron][Gamepad][Iron]
 
 Requires:
 
