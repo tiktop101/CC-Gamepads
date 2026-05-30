@@ -24,9 +24,9 @@ Up to 4 players can send input to the same Gamepad Peripheral at once. Each play
 
 Gamepad
 
-[Iron]   [Redstone] [Iron]
-[Button] [Copper]   [Button]
-[Iron]   [Redstone] [Iron]
+[Iron]     [redstone]      [Iron]
+[button] [Copper]  [button]
+[Iron]     [Redstone]  [Iron]
 
 Requires:
 
@@ -37,8 +37,8 @@ Requires:
 
 Gamepad Peripheral
 
-[Iron]     [Redstone] [Iron]
-[Redstone] [Computer] [Redstone]
+[Iron]     [Gold]      [Iron]
+[Redstone] [Computer]  [Redstone]
 [Iron]     [Gamepad]  [Iron]
 
 Requires:
