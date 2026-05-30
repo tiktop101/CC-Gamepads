@@ -39,18 +39,8 @@ public class GamepadClientBridge {
     private static int lastCount = -1;
     private static boolean mappingsLoaded;
 
-    /**
-     * Button indices (0-based internally, 1-based in Lua API) — SDL gamepad layout:
-     *  0=A  1=B  2=X  3=Y  4=LBumper  5=RBumper  6=Back  7=Start  8=Guide
-     *  9=LStick  10=RStick  11=DpadUp  12=DpadRight  13=DpadDown  14=DpadLeft
-     */
     public static final int BUTTON_COUNT = GamepadConstants.BUTTON_COUNT;
 
-    /**
-     * Axis indices (0-based internally, 1-based in Lua API) — SDL gamepad layout:
-     *  0=LeftX  1=LeftY  2=RightX  3=RightY
-     *  4=LeftTrigger(0..1)  5=RightTrigger(0..1)
-     */
     public static final int AXIS_COUNT = GamepadConstants.AXIS_COUNT;
 
     public static void requestControllerListRefresh() {
@@ -197,10 +187,6 @@ public class GamepadClientBridge {
             float[] axes = new float[AXIS_COUNT];
 
             if (GLFW.glfwJoystickIsGamepad(jid)) {
-                // SDL-mapped path (Xbox, PS, Switch Pro, etc).
-                // GLFW_GAMEPAD_BUTTON_* indices 0-14 map 1:1 to our button array.
-                // GLFW_GAMEPAD_AXIS triggers report -1.0 (released) to +1.0 (fully pressed)
-                // per the GLFW/SDL spec — normalize to 0..1 with (v+1)/2.
                 try (MemoryStack stack = MemoryStack.stackPush()) {
                     GLFWGamepadState state = GLFWGamepadState.malloc(stack);
                     if (GLFW.glfwGetGamepadState(jid, state)) {
@@ -211,7 +197,6 @@ public class GamepadClientBridge {
                         axes[1] = clamp(state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y));
                         axes[2] = clamp(state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X));
                         axes[3] = clamp(state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y));
-                        // SDL triggers: -1=released, +1=fully pressed -> always use (v+1)/2
                         axes[4] = sdlTriggerToUnit(state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_TRIGGER));
                         axes[5] = sdlTriggerToUnit(state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER));
                     }
@@ -219,9 +204,6 @@ public class GamepadClientBridge {
                 return new Snapshot(buttons, axes);
             }
 
-            // Raw HID fallback for controllers with no SDL mapping. GLFW can still see
-            // these as joysticks even when glfwJoystickIsGamepad is false, but Xbox USB
-            // and Xbox Bluetooth expose different raw indices on Linux.
             RawProfile profile = RawProfile.forController(controller);
             ByteBuffer rawButtons = GLFW.glfwGetJoystickButtons(jid);
             FloatBuffer rawAxes   = GLFW.glfwGetJoystickAxes(jid);
@@ -285,8 +267,6 @@ public class GamepadClientBridge {
                 String guid = controller.guid.toLowerCase();
                 String name = controller.name.toLowerCase();
 
-                // SDL_GameControllerDB Linux mappings for Xbox One/Series over Bluetooth
-                // use GUIDs beginning 050000005e040000 and raw buttons/axes above.
                 if (guid.startsWith("050000005e040000")
                     || name.contains("xbox wireless")
                     || name.contains("xbox series")) {
@@ -296,14 +276,6 @@ public class GamepadClientBridge {
             }
         }
 
-        /**
-         * Normalize a trigger from SDL/GLFW range [-1, +1] to [0, 1].
-         *   -1.0 (fully released) → 0.0
-         *    0.0 (half pressed)   → 0.5
-         *   +1.0 (fully pressed)  → 1.0
-         *
-         * Do NOT use a threshold branch here — it breaks intermediate values.
-         */
         private static float sdlTriggerToUnit(float v) {
             return Math.max(0.0f, Math.min(1.0f, (v + 1.0f) * 0.5f));
         }

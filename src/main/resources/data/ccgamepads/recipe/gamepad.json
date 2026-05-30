@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IRI",
+    "BCB",
+    "IRI"
+  ],
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "R": { "item": "minecraft:redstone" },
+    "B": { "item": "minecraft:stone_button" },
+    "C": { "item": "minecraft:copper_ingot" }
+  },
+  "result": {
+    "id": "ccgamepads:gamepad"
+  }
+}

@@ -55,26 +55,16 @@ public class GamepadPeripheral implements IPeripheral {
         }
     }
 
-    /** Returns a list of all connected players/controllers as state tables. */
     @LuaFunction
     public final List<Map<String, Object>> getPlayers() {
         return GamepadServerState.getStates(level, pos).stream().map(GamepadServerState.ControllerState::toLua).toList();
     }
 
-    /** Returns the full state table for a given slot (1-4). */
     @LuaFunction
     public final Map<String, Object> getState(int slot) throws LuaException {
         return requireSlot(slot).toLua();
     }
 
-    /**
-     * Returns true if a button is held on the given slot.
-     *
-     * @param slot   player slot (1-4)
-     * @param button button index (1-15) matching SDL gamepad layout:
-     *               1=A 2=B 3=X 4=Y 5=LB 6=RB 7=Back 8=Start 9=Guide
-     *               10=LStick 11=RStick 12=DpadUp 13=DpadRight 14=DpadDown 15=DpadLeft
-     */
     @LuaFunction
     public final boolean isDown(int slot, int button) throws LuaException {
         byte[] buttons = requireSlot(slot).buttons();
@@ -82,14 +72,6 @@ public class GamepadPeripheral implements IPeripheral {
         return index >= 0 && index < buttons.length && buttons[index] != 0;
     }
 
-    /**
-     * Returns the value of an axis on the given slot.
-     *
-     * @param slot player slot (1-4)
-     * @param axis axis index (1-6):
-     *             1=LeftX 2=LeftY 3=RightX 4=RightY
-     *             5=LeftTrigger(0..1) 6=RightTrigger(0..1)
-     */
     @LuaFunction
     public final double getAxis(int slot, int axis) throws LuaException {
         float[] axes = requireSlot(slot).axes();
@@ -97,11 +79,6 @@ public class GamepadPeripheral implements IPeripheral {
         return index >= 0 && index < axes.length ? axes[index] : 0.0;
     }
 
-    /**
-     * Returns true if a named button is held on the given slot.
-     * Valid names: a b x y leftBumper rightBumper back select start guide home
-     *              leftStick rightStick dpadUp dpadRight dpadDown dpadLeft
-     */
     @LuaFunction
     public final boolean isButtonDown(int slot, String name) throws LuaException {
         GamepadServerState.ControllerState state = requireSlot(slot);
@@ -127,10 +104,6 @@ public class GamepadPeripheral implements IPeripheral {
         };
     }
 
-    /**
-     * Returns the value of a named axis on the given slot.
-     * Valid names: leftX leftY rightX rightY leftTrigger rightTrigger
-     */
     @LuaFunction
     public final double getAxisValue(int slot, String name) throws LuaException {
         GamepadServerState.ControllerState state = requireSlot(slot);
@@ -145,19 +118,16 @@ public class GamepadPeripheral implements IPeripheral {
         };
     }
 
-    /** Returns the maximum number of simultaneous players (always 4). */
     @LuaFunction
     public final int getMaxPlayers() {
         return GamepadConstants.MAX_PLAYERS;
     }
 
-    /** Returns the number of buttons per controller (15, matching SDL gamepad layout). */
     @LuaFunction
     public final int getButtonCount() {
         return GamepadConstants.BUTTON_COUNT;
     }
 
-    /** Returns the number of axes per controller (6, matching SDL gamepad layout). */
     @LuaFunction
     public final int getAxisCount() {
         return GamepadConstants.AXIS_COUNT;

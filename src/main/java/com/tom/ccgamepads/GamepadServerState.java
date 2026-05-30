@@ -135,13 +135,11 @@ public class GamepadServerState {
             result.put("guid", guid);
             result.put("updatedAt", updatedAt);
 
-            // buttons[] is 0-indexed internally; Lua uses 1-indexed keys
             Map<Integer, Boolean> buttonMap = new HashMap<>();
             for (int i = 0; i < buttons.length; i++) buttonMap.put(i + 1, buttons[i] != 0);
             result.put("buttons", buttonMap);
             result.put("buttonNames", namedButtons());
 
-            // axes[] is 0-indexed internally; Lua uses 1-indexed keys
             Map<Integer, Double> axisMap = new HashMap<>();
             for (int i = 0; i < axes.length; i++) axisMap.put(i + 1, (double) axes[i]);
             result.put("axes", axisMap);
@@ -150,27 +148,6 @@ public class GamepadServerState {
             return result;
         }
 
-        /**
-         * Named button map. Internal button array follows SDL/GLFW gamepad layout (0-indexed).
-         * Lua slots are 1-indexed (internal index + 1).
-         *
-         * Internal index -> SDL name -> Lua slot:
-         *  0 = A           -> slot 1
-         *  1 = B           -> slot 2
-         *  2 = X           -> slot 3
-         *  3 = Y           -> slot 4
-         *  4 = LeftBumper  -> slot 5
-         *  5 = RightBumper -> slot 6
-         *  6 = Back/Select -> slot 7
-         *  7 = Start       -> slot 8
-         *  8 = Guide/Home  -> slot 9
-         *  9 = LeftStick   -> slot 10
-         * 10 = RightStick  -> slot 11
-         * 11 = DpadUp      -> slot 12
-         * 12 = DpadRight   -> slot 13
-         * 13 = DpadDown    -> slot 14
-         * 14 = DpadLeft    -> slot 15
-         */
         private Map<String, Boolean> namedButtons() {
             Map<String, Boolean> names = new HashMap<>();
             names.put("a",            btn(0));
@@ -180,10 +157,10 @@ public class GamepadServerState {
             names.put("leftBumper",   btn(4));
             names.put("rightBumper",  btn(5));
             names.put("back",         btn(6));
-            names.put("select",       btn(6));   // alias for back
+            names.put("select",       btn(6));
             names.put("start",        btn(7));
             names.put("guide",        btn(8));
-            names.put("home",         btn(8));   // alias for guide
+            names.put("home",         btn(8));
             names.put("leftStick",    btn(9));
             names.put("rightStick",   btn(10));
             names.put("dpadUp",       btn(11));
@@ -197,18 +174,6 @@ public class GamepadServerState {
             return index >= 0 && index < buttons.length && buttons[index] != 0;
         }
 
-        /**
-         * Named axis map. Internal axis array follows SDL/GLFW gamepad axis layout (0-indexed).
-         * Triggers are normalized to [0, 1] before being stored.
-         *
-         * Internal index -> SDL name -> Lua slot:
-         *  0 = LeftX         -> slot 1
-         *  1 = LeftY         -> slot 2
-         *  2 = RightX        -> slot 3
-         *  3 = RightY        -> slot 4
-         *  4 = LeftTrigger   -> slot 5  (0=released, 1=fully pressed)
-         *  5 = RightTrigger  -> slot 6  (0=released, 1=fully pressed)
-         */
         private Map<String, Double> namedAxes() {
             Map<String, Double> names = new HashMap<>();
             names.put("leftX",        axis(0));
