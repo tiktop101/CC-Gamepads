@@ -20,33 +20,44 @@ The controller is read on the player client, sent to the server, and exposed to 
 
 Up to 4 players can send input to the same Gamepad Peripheral at once. Each player gets a slot from 1 to 4.
 
-## Crafting Recipes
+## ## Crafting Recipes
 
-Gamepad
+### Gamepad
 
-[Iron]   [Redstone] [Iron]
-[Button] [Copper]   [Button]
-[Iron]   [Redstone] [Iron]
+```text
+[Iron]  [Redstone] [Iron]
+[Button] [Copper]  [Button]
+[Iron]  [Redstone] [Iron]
+```
 
-Requires:
+**Requires:**
 
+```text
 4× Iron Ingots
 2× Redstone Dust
 2× Stone Buttons
 1× Copper Ingot
+```
 
-Gamepad Peripheral
+---
 
-[Iron]     [Redstone] [Iron]
+### Gamepad Peripheral
+
+```text
+[Iron]    [Gold]     [Iron]
 [Redstone] [Computer] [Redstone]
-[Iron]     [Gamepad]  [Iron]
+[Iron]    [Gamepad]  [Iron]
+```
 
-Requires:
+**Requires:**
 
+```text
 4× Iron Ingots
+1× Gold Ingot
 3× Redstone Dust
 1× normal ComputerCraft computer
 1× CC:Gamepads Gamepad
+```
 
 ## Lua Peripheral
 
