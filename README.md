@@ -20,9 +20,9 @@ The controller is read on the player client, sent to the server, and exposed to 
 
 Up to 4 players can send input to the same Gamepad Peripheral at once. Each player gets a slot from 1 to 4.
 
-## ## Crafting Recipes
+## Crafting Recipes
 
-### Gamepad
+## Gamepad
 
 ```text
 [Iron]  [Redstone] [Iron]
@@ -41,7 +41,7 @@ Up to 4 players can send input to the same Gamepad Peripheral at once. Each play
 
 ---
 
-### Gamepad Peripheral
+## Gamepad Peripheral
 
 ```text
 [Iron]    [Gold]     [Iron]
