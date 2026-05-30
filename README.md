@@ -23,9 +23,10 @@ Up to 4 players can send input to the same Gamepad Peripheral at once. Each play
 ## Crafting Recipes
 
 Gamepad
-[Iron]  [Redstone] [Iron]
-[Button] [Copper]  [Button]
-[Iron]  [Redstone] [Iron]
+
+[Iron]   [Redstone] [Iron]
+[Button] [Copper]   [Button]
+[Iron]   [Redstone] [Iron]
 
 Requires:
 
@@ -33,15 +34,16 @@ Requires:
 2× Redstone Dust
 2× Stone Buttons
 1× Copper Ingot
+
 Gamepad Peripheral
-[Iron]    [Gold]     [Iron]
+
+[Iron]     [Redstone] [Iron]
 [Redstone] [Computer] [Redstone]
-[Iron]    [Gamepad]  [Iron]
+[Iron]     [Gamepad]  [Iron]
 
 Requires:
 
 4× Iron Ingots
-1× Gold Ingot
 3× Redstone Dust
 1× normal ComputerCraft computer
 1× CC:Gamepads Gamepad
